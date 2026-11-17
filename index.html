@@ -188,7 +188,7 @@
     <li><a href="#tax">2. PreeT</a>
       <ol>
         <li><a href="#tax-delete">2-1. 탈퇴 삭제 30초</a></li>
-        <li><a href="#tax-deploy">2-2. 배포 실패와 끊김</a></li>
+        <li><a href="#tax-deploy">2-2. 배포 중 서비스 끊김</a></li>
       </ol>
     </li>
   </ol>
@@ -214,7 +214,7 @@
       <tr><td>Y-Fin</td><td><a href="#yfin-token">같은 토큰으로 동시 갱신 시 500 오류</a></td><td>동시 요청 10건 중 <strong>1건만 발급, 9건은 401</strong></td></tr>
       <tr><td>Y-Fin</td><td><a href="#yfin-llm">LLM 정규화 배치의 60초 timeout</a></td><td>97건 배치 <strong>5분 30초 → 2분 52초~3분 23초</strong>, 파싱 실패 0건</td></tr>
       <tr><td>PreeT</td><td><a href="#tax-delete">회원 탈퇴 DELETE 30초</a></td><td><strong>30.0~32.9초 → 0.77~1.2초</strong></td></tr>
-      <tr><td>PreeT</td><td><a href="#tax-deploy">배포 실패, 배포 중 서비스 끊김</a></td><td>배포 중 API 끊김 <strong>20.6초 → 0초</strong> (재현 환경)</td></tr>
+      <tr><td>PreeT</td><td><a href="#tax-deploy">배포할 때마다 서비스 끊김</a></td><td>배포 중 API 끊김 <strong>20.6초 → 0초</strong> (재현 환경)</td></tr>
     </tbody>
   </table>
   </div>
@@ -631,31 +631,21 @@ CREATE INDEX idx_judgment_override_transaction  ON judgment_override (transactio
   <p class="note">한계: 개인 PC의 PostgreSQL 16에서 2회 측정했고 실행마다 최대 1.7배 흔들려 크기 비교로만 봅니다. 운영 RDS에서는 재지 않았습니다.</p>
 
   <!-- 2-2 -->
-  <h3 id="tax-deploy">2-2. 배포 단계의 빌드 실패와 배포 중 서비스 끊김</h3>
+  <h3 id="tax-deploy">2-2. 배포할 때마다 서비스가 20초씩 끊김</h3>
 
   <h4>문제 원인</h4>
   <ul>
-    <li><strong>PR 검증은 통과했는데 release 배포에서 웹 이미지 빌드 실패</strong> (10/05)
-      <ul>
-        <li>웹 Dockerfile이 저장소 루트의 <code>rules/categories.yaml</code>을 복사하지 않았음</li>
-        <li>CI 러너에는 저장소 전체가 있어 <code>npm build</code>는 통과 → <strong>PR이 검증한 환경과 운영 이미지가 달랐던 것</strong></li>
-      </ul>
-    </li>
-    <li><strong>배포할 때마다 서비스가 끊김</strong>
-      <ul>
-        <li>웹 이미지 태그가 커밋마다 바뀌어, 화면이 바뀌지 않은 배포에서도 Caddy가 재시작됨</li>
-        <li>백엔드와 AI 컨테이너도 한 쌍뿐이라 교체되는 동안 API가 응답하지 못함</li>
-        <li>재현 환경 측정: 배포 1회에 <strong>화면 18.1초, API 20.6초</strong> 끊김</li>
-        <li>판정 작업(run)이 도는 중 배포하면 작업이 끝날 때까지 API가 <strong>63.1초</strong> 멈춤</li>
-      </ul>
-    </li>
+    <li>EC2 한 대에서 Docker Compose로 Caddy(웹), backend, ai를 <strong>한 벌씩만</strong> 운영</li>
+    <li>웹 이미지 태그가 커밋마다 바뀌어, 화면이 바뀌지 않은 배포에서도 <strong>Caddy가 매번 재시작</strong> → 화면 접속 끊김</li>
+    <li>backend와 ai도 한 쌍뿐이라 <strong>컨테이너를 교체하는 동안 API가 응답하지 못함</strong></li>
+    <li>재현 환경 측정: 배포 1회에 <strong>화면 18.1초, API 20.6초</strong> 끊김</li>
+    <li>판정 작업(run)이 도는 중 배포하면 작업이 끝날 때까지 API가 <strong>63.1초</strong> 멈춤</li>
   </ul>
 
   <h4>해결 과정</h4>
   <ol class="steps">
-    <li><strong>PR 단계에서 운영과 같은 Dockerfile로 이미지 빌드</strong>: backend, ai, web 각 job에 <code>docker build -f deploy/*.Dockerfile</code> 추가</li>
-    <li><strong>Caddy와 화면 파일 분리</strong>: Caddy 이미지 버전을 고정하고 화면 파일은 볼륨에 반영 → 설정 변경은 재시작 없이 <code>caddy reload</code></li>
-    <li><strong>백엔드와 AI를 blue·green 두 쌍으로 무중단 배포</strong>
+    <li><strong>Caddy와 화면 파일 분리</strong> (PR #252): Caddy 이미지 버전을 고정하고 화면 파일만 볼륨에 반영 → 설정 변경은 재시작 없이 <code>caddy reload</code></li>
+    <li><strong>백엔드와 AI를 blue·green 두 쌍으로 무중단 배포</strong> (PR #253)
       <ol class="steps-strip">
         <li>쉬는 색의 backend·ai를 새 이미지로 띄우고 healthy까지 대기</li>
         <li>Caddy가 읽는 <code>upstream.caddy</code>를 새 색으로 교체</li>
@@ -667,12 +657,10 @@ CREATE INDEX idx_judgment_override_transaction  ON judgment_override (transactio
         <li>헬스체크 기반 자동 전환 대신 reload를 택함: 옛 서버가 하던 요청은 마저 끝내고, 새 요청만 새 설정을 따르기 때문</li>
       </ul>
     </li>
-    <li><strong>배포 스크립트 안전장치</strong>
+    <li><strong>전환이 실패하거나 꼬이지 않도록 보완</strong>
       <ul>
-        <li><code>flock</code>으로 동시 배포 차단, release 최신 SHA가 아닌 이전 배포 요청은 거부, <code>--rollback</code> 모드</li>
-        <li>Flyway 밖의 SQL은 <code>psql -1</code>로 한 트랜잭션에 묶어 일부만 적용되는 상황 방지</li>
-        <li>reload가 실패하면 <code>upstream.caddy</code>를 원래 값으로 복원 (팀원 리뷰 반영)</li>
-        <li>SSM이 실행하는 스크립트는 직전 배포의 파일이라 변경이 한 배포 늦게 반영되던 문제 → checkout 뒤 대상 커밋의 <code>deploy.sh</code>로 다시 실행</li>
+        <li>reload가 실패하면 <code>upstream.caddy</code>를 원래 색으로 복원. 그대로 두면 다음 배포가 서비스 중인 색을 쉬는 색으로 착각해 교체함 (팀원 리뷰 반영)</li>
+        <li>SSM이 실행하는 <code>deploy.sh</code>는 직전 배포의 파일이라, 바뀐 배포 절차가 한 배포 늦게 적용되던 문제 → checkout 뒤 대상 커밋의 <code>deploy.sh</code>로 다시 실행</li>
       </ul>
     </li>
     <li><strong>운영 서버를 건드리지 않고 검증</strong>: docker-in-docker로 가짜 EC2를 만들어 <code>deploy.sh</code>를 그대로 실행하고, 0.2초마다 화면과 API를 호출해 끊긴 시간을 측정</li>
@@ -681,10 +669,8 @@ CREATE INDEX idx_judgment_override_transaction  ON judgment_override (transactio
   <h4>결과</h4>
   <div class="result">
     <ul>
-      <li>운영 이미지 빌드 누락을 PR 단계에서 잡도록 바꾸고, 같은 날 재배포 성공</li>
       <li>배포 중 끊김 <span class="big">화면 18.1초 → 0초, API 20.6초 → 0초</span> (blue·green 전환 4회 모두 0초)</li>
       <li>판정 5,000건 처리 중 배포: API 멈춤 63.1초 → 0초, 5,000건 모두 처리 완료</li>
-      <li>PR #252(Caddy 분리), #253(blue·green) 병합</li>
     </ul>
   </div>
   <p class="note">한계와 후속: 측정은 운영과 같은 스크립트를 돌린 재현 환경 기준입니다. 60초 넘게 걸리는 판정 작업은 옛 백엔드의 종료 대기 시간을 넘으면 중단되고, 운영 환경에 JWT 서명 키가 고정돼 있지 않아 전환마다 로그아웃되는 문제를 발견해 문서로 공유했습니다.</p>
