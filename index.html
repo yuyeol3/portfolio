@@ -377,10 +377,11 @@
     <span class="k">throw new</span> BusinessException(AuthErrorCode.UNAUTHORIZED);
 }</code></pre>
     </li>
-    <li><strong>배포 직후 발생한 2차 오류를 36분 만에 수정</strong>
+    <li><strong>벌크 UPDATE와 영속성 컨텍스트</strong>
       <ul>
-        <li>처음 붙인 <code>@Modifying(clearAutomatically = true)</code>가 UPDATE 직후 영속성 컨텍스트를 비움</li>
-        <li>그 전에 조회해 둔 사용자 엔티티에 접근할 때 오류 발생 → 옵션을 제거 (커밋 00:43 → hotfix 01:19)</li>
+        <li>벌크 UPDATE는 영속성 컨텍스트를 거치지 않아, 처음엔 <code>@Modifying(clearAutomatically = true)</code>를 붙임</li>
+        <li>그런데 직전에 LAZY로 받아 둔 <code>user</code> 프록시가 clear로 준영속이 되어, 권한 조회 시 초기화에 실패함</li>
+        <li>이 트랜잭션은 UPDATE 뒤에 토큰 엔티티를 다시 읽지 않으므로 clear가 필요 없다고 판단해 옵션을 제거</li>
       </ul>
     </li>
   </ol>
