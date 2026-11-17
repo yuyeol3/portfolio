@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>최유렬 백엔드 포트폴리오</title>
-<meta name="description" content="Y-Fin, 종합소득세 경비 판정 서비스에서 문제 원인을 찾고 해결한 과정과 결과">
+<meta name="description" content="Y-Fin, PreeT에서 문제 원인을 찾고 해결한 과정과 결과">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
   :root {
@@ -185,7 +185,7 @@
         <li><a href="#yfin-llm">1-2. LLM 정규화 timeout</a></li>
       </ol>
     </li>
-    <li><a href="#tax">2. 경비 판정 서비스</a>
+    <li><a href="#tax">2. PreeT</a>
       <ol>
         <li><a href="#tax-delete">2-1. 탈퇴 삭제 30초</a></li>
         <li><a href="#tax-deploy">2-2. 배포 실패와 끊김</a></li>
@@ -213,8 +213,8 @@
     <tbody>
       <tr><td>Y-Fin</td><td><a href="#yfin-token">같은 토큰으로 동시 갱신 시 500 오류</a></td><td>동시 요청 10건 중 <strong>1건만 발급, 9건은 401</strong></td></tr>
       <tr><td>Y-Fin</td><td><a href="#yfin-llm">LLM 정규화 배치의 60초 timeout</a></td><td>97건 배치 <strong>5분 30초 → 2분 52초~3분 23초</strong>, 파싱 실패 0건</td></tr>
-      <tr><td>경비 판정</td><td><a href="#tax-delete">회원 탈퇴 DELETE 30초</a></td><td><strong>30.0~32.9초 → 0.77~1.2초</strong></td></tr>
-      <tr><td>경비 판정</td><td><a href="#tax-deploy">배포 실패, 배포 중 서비스 끊김</a></td><td>배포 중 API 끊김 <strong>20.6초 → 0초</strong> (재현 환경)</td></tr>
+      <tr><td>PreeT</td><td><a href="#tax-delete">회원 탈퇴 DELETE 30초</a></td><td><strong>30.0~32.9초 → 0.77~1.2초</strong></td></tr>
+      <tr><td>PreeT</td><td><a href="#tax-deploy">배포 실패, 배포 중 서비스 끊김</a></td><td>배포 중 API 끊김 <strong>20.6초 → 0초</strong> (재현 환경)</td></tr>
     </tbody>
   </table>
   </div>
@@ -469,7 +469,7 @@
 
 <!-- ============================ 경비 판정 ============================ -->
 <section id="tax">
-  <h2><span class="num">2.</span>종합소득세 경비 판정 서비스</h2>
+  <h2><span class="num">2.</span>PreeT: 종합소득세 경비 판정 서비스</h2>
 
   <div class="project-head">
     <p class="oneline">개인사업자의 카드 승인 내역을 받아 거래마다 필요경비 인정 여부를 조문 근거와 함께 판정하는 서비스. 판정은 결정론적 룰 엔진이 하고, AI는 가맹점 분류와 규칙 카드 생성에 사용</p>
@@ -482,7 +482,7 @@
   </div>
 
   <figure>
-    <svg viewBox="0 0 760 300" role="img" aria-label="경비 판정 서비스 배포 구조">
+    <svg viewBox="0 0 760 300" role="img" aria-label="PreeT 배포 구조">
       <defs>
         <marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6b7280"/></marker>
       </defs>
