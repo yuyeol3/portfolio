@@ -26,6 +26,8 @@
     font-family: "Pretendard", -apple-system, "Segoe UI", "Malgun Gothic", sans-serif;
     font-size: 15.5px;
     line-height: 1.7;
+    word-break: keep-all;
+    overflow-wrap: break-word;
     -webkit-font-smoothing: antialiased;
   }
   a { color: var(--blue); text-decoration: none; }
@@ -90,7 +92,7 @@
   .project-head dt { color: var(--muted); }
   .project-head dd { margin: 0; }
 
-  table { width: 100%; border-collapse: collapse; margin: 10px 0 14px; font-size: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0 14px; font-size: 14px; font-variant-numeric: tabular-nums; }
   th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
   th { background: var(--soft); font-weight: 600; }
   td.num, th.num { text-align: right; white-space: nowrap; }
@@ -196,7 +198,7 @@
     </li>
   </ol>
   <div class="links">
-    <a href="https://github.com/yuyeol3">GitHub</a>
+    <a href="https://github.com/yuyeol3" target="_blank" rel="noopener noreferrer">GitHub</a>
     <a href="mailto:zerom50@gmail.com">zerom50@gmail.com</a>
   </div>
 </nav>
@@ -216,7 +218,7 @@
     <tbody>
       <tr><td>Y-Fin</td><td><a href="#yfin-token">같은 토큰으로 동시 갱신 시 500 오류</a></td><td>동시 요청 10건 중 <strong>1건만 발급, 9건은 401</strong></td></tr>
       <tr><td>Y-Fin</td><td><a href="#yfin-llm">LLM 정규화 배치의 60초 timeout</a></td><td>97건 배치 <strong>5분 30초 → 2분 52초~3분 23초</strong>, 파싱 실패 0건</td></tr>
-      <tr><td>PreeT</td><td><a href="#tax-delete">회원 탈퇴 DELETE 30초</a></td><td><strong>30.0~32.9초 → 0.77~1.2초</strong></td></tr>
+      <tr><td>PreeT</td><td><a href="#tax-delete">회원 탈퇴 DELETE 30초</a></td><td>계정 1건 삭제 <strong>30.0~32.9초 → 0.77~1.2초</strong></td></tr>
       <tr><td>PreeT</td><td><a href="#tax-deploy">배포할 때마다 서비스 끊김</a></td><td>배포 중 API 끊김 <strong>20.6초 → 0초</strong> (재현 환경)</td></tr>
     </tbody>
   </table>
@@ -231,10 +233,10 @@
     <p class="oneline">은행 상품 328건과 정부 정책상품 63건(총 391건)을 하나의 구조로 모아, 청년이 가입할 수 있는 상품과 실제 금리를 보여주는 서비스</p>
     <dl>
       <dt>기간</dt><dd>2026.03 ~ 진행 중</dd>
-      <dt>역할</dt><dd>5인 팀 중 백엔드 (2명 중 1명). 서비스 API 초기 구조와 인증·인가, 약관·입력 폼·캘린더 API, 수집·정규화 배치(api-collector), CI와 GCP 배포 담당</dd>
+      <dt>역할</dt><dd>5인 팀 중 백엔드 (2명 중 1명). 서비스 API 초기 구조와 인증/인가, 약관/입력 폼/캘린더 API, 수집 및 정규화 배치(api-collector), CI와 GCP 배포 담당</dd>
       <dt>기술</dt><dd>Java 21, Spring Boot 4, Spring Batch, Spring Security(JWT), Spring Data JPA, PostgreSQL 16, Gemini 2.5 Flash-Lite, Docker Compose, GitHub Actions, GCP Compute Engine</dd>
       <dt>성과</dt><dd>제7회 PNU 창의융합AI해커톤 최우수상</dd>
-      <dt>저장소</dt><dd><a href="https://github.com/ApptiveDev/Fin-BE">ApptiveDev/Fin-BE</a> (서비스 API), <a href="https://github.com/ApptiveDev/Fin-API">ApptiveDev/Fin-API</a> (수집·정규화 배치)</dd>
+      <dt>저장소</dt><dd><a href="https://github.com/ApptiveDev/Fin-BE" target="_blank" rel="noopener noreferrer">ApptiveDev/Fin-BE</a> (서비스 API), <a href="https://github.com/ApptiveDev/Fin-API" target="_blank" rel="noopener noreferrer">ApptiveDev/Fin-API</a> (수집 및 정규화 배치)</dd>
     </dl>
   </div>
 
@@ -289,7 +291,7 @@
         <text x="441" y="112" text-anchor="middle" font-size="11" fill="#6b7280">적재</text>
       </g>
     </svg>
-    <figcaption>그림 1. 수집·정규화 배치(api-collector)와 서비스 API(Core Backend)를 분리해, 외부 API나 LLM 지연이 사용자 조회로 번지지 않게 했습니다. 파란 테두리는 본인이 개발한 영역입니다(api-collector 전체, Core Backend는 백엔드 2명이 함께 개발).</figcaption>
+    <figcaption>그림 1. 배치와 서비스 API를 분리해 외부 API나 LLM 지연이 사용자 조회에 영향을 주지 않게 했습니다. 파란 테두리가 개발 담당 영역입니다.</figcaption>
   </figure>
 
   <!-- 1-1 -->
@@ -302,7 +304,7 @@
     <li>기존 갱신 순서: <strong>토큰 조회 → 유효성 확인 → 기존 토큰 삭제 → 새 토큰 발급</strong>
       <ul>
         <li>두 요청이 모두 "유효하다"고 읽은 뒤 같은 행을 삭제하려 함</li>
-        <li>먼저 지운 요청은 성공, 뒤 요청은 이미 없는 행을 지우다 예외 → 500</li>
+        <li>먼저 지운 요청은 성공하고, 뒤 요청은 이미 삭제된 행을 지우려다 예외 발생 → 500</li>
         <li>즉 <strong>"확인"과 "소비"가 서로 다른 문장</strong>이라 그 사이에 다른 요청이 끼어들 수 있는 구조</li>
       </ul>
     </li>
@@ -366,9 +368,9 @@
   <h4>해결 과정</h4>
   <ol class="steps">
     <li><strong>삭제 대신 "활성 토큰만 비활성화"하는 조건부 UPDATE로 변경</strong>
-      <ul><li>확인과 변경이 한 문장이라, 같은 행을 바꾸려는 두 번째 요청은 DB에서 대기한 뒤 조건(<code>isActive = true</code>)을 다시 검사함</li></ul>
+      <ul><li>확인과 변경을 한 문장으로 합쳐, 같은 행을 수정하려는 두 번째 요청은 DB에서 대기한 뒤 조건(<code>isActive = true</code>)을 다시 검사함</li></ul>
     </li>
-    <li><strong>영향 행 수로 발급 여부 결정</strong>: 1이면 새 토큰 발급, 0이면 이미 쓴 토큰으로 보고 401
+    <li><strong>영향 행 수로 발급 여부 결정</strong>: 1이면 새 토큰 발급, 0이면 이미 쓴 토큰으로 보고 401 반환
 <pre><code><span class="c">// RefreshTokenRepository.java</span>
 @Modifying
 @Query("update RefreshToken r set r.isActive = false " +
@@ -382,8 +384,8 @@
     </li>
     <li><strong>벌크 UPDATE와 영속성 컨텍스트</strong>
       <ul>
-        <li>벌크 UPDATE는 영속성 컨텍스트를 거치지 않아, 처음엔 <code>@Modifying(clearAutomatically = true)</code>를 붙임</li>
-        <li>그런데 직전에 LAZY로 받아 둔 <code>user</code> 프록시가 clear로 준영속이 되어, 권한 조회 시 초기화에 실패함</li>
+        <li>벌크 UPDATE는 영속성 컨텍스트를 거치지 않아 처음엔 <code>@Modifying(clearAutomatically = true)</code>를 적용</li>
+        <li>그런데 직전에 LAZY로 받아 둔 <code>user</code> 프록시가 clear로 준영속 상태가 되어, 권한 조회 시 초기화에 실패</li>
         <li>이 트랜잭션은 UPDATE 뒤에 토큰 엔티티를 다시 읽지 않으므로 clear가 필요 없다고 판단해 옵션을 제거</li>
       </ul>
     </li>
@@ -393,7 +395,8 @@
   <div class="result">
     <ul>
       <li>같은 토큰으로 동시 요청 10건: <span class="big">200 응답 1건, 401 응답 9건</span> (PR에 첨부한 실행 결과)</li>
-      <li>재사용된 토큰은 서버 오류(500)가 아니라 인증 실패(401)로 처리</li>    </ul>
+      <li>재사용된 토큰은 서버 오류(500)가 아니라 인증 실패(401)로 처리</li>
+    </ul>
   </div>
 
   <!-- 1-2 -->
@@ -402,10 +405,10 @@
   <h4>문제 원인</h4>
   <ul>
     <li>금감원 상품의 가입 대상과 우대 조건은 은행마다 <strong>줄글</strong>로 적혀 있어 규칙만으로 구조화할 수 없음 → 해당 필드만 Gemini로 구조화</li>
-    <li>로컬 FSS 상품 97건 기준 배치 한 번에 <strong>5분 30초</strong>, 그중 4건이 약 <strong>60초 대기 후 timeout</strong></li>
+    <li>로컬 금감원(FSS) 상품 97건 기준 배치 1회에 <strong>5분 30초</strong> 소요, 그중 4건이 약 <strong>60초 대기 후 timeout</strong></li>
     <li>호출 단위 기록이 없어 어떤 상품이 오래 걸리는지 알 수 없었음 → 계측부터 추가
       <ul>
-        <li><code>temperature = 0</code>, 출력 토큰 상한 65,536 설정에서 일부 입력이 비정상적으로 긴 출력을 만들며 timeout까지 감</li>
+        <li><code>temperature = 0</code>, 출력 토큰 상한 65,536 설정에서 일부 입력이 비정상적으로 긴 출력을 생성하다 timeout 발생</li>
       </ul>
     </li>
     <li>추출 품질 문제도 함께 발견
@@ -418,11 +421,11 @@
 
   <h4>해결 과정</h4>
   <ol class="steps">
-    <li><strong>호출 단위 로깅 추가</strong>: 상품 ID, 소요시간(<code>durationMs</code>), 성공·실패와 예외 종류를 호출마다 기록</li>
-    <li><strong>설정 조합을 바꿔 같은 97건으로 반복 측정</strong> (temperature와 출력 상한을 함께 바꿨으므로 한 설정만의 효과로 보지 않음)
+    <li><strong>호출 단위 로깅 추가</strong>: 상품 ID, 소요시간(<code>durationMs</code>), 성공 여부와 예외 종류를 호출마다 기록</li>
+    <li><strong>temperature와 출력 상한 조합을 바꿔 같은 97건으로 반복 측정</strong>
       <div class="table-scroll">
       <table>
-        <thead><tr><th>설정</th><th class="num">job 시간</th><th class="num">실패</th><th>실패 양상</th></tr></thead>
+        <thead><tr><th>설정</th><th class="num">배치 시간</th><th class="num">실패</th><th>실패 양상</th></tr></thead>
         <tbody>
           <tr><td>기존 (temp 0, 상한 65,536)</td><td class="num">5분 30초</td><td class="num">4/97</td><td>약 60초 뒤 timeout</td></tr>
           <tr><td>temp 0.1, 상한 2,048</td><td class="num">3분 28초</td><td class="num">6/97</td><td>8.5~9.8초 내 파싱 실패</td></tr>
@@ -431,7 +434,10 @@
         </tbody>
       </table>
       </div>
-      <ul><li>0.1~0.3 사이에 뚜렷한 우열은 없었고, 정상 출력 규모를 근거로 상한 2,048을 정함</li></ul>
+      <ul>
+        <li>0.1~0.3 사이에 뚜렷한 우열은 없었고, 정상 출력 규모를 근거로 상한 2,048을 결정</li>
+        <li>temperature와 출력 상한을 함께 바꿨으므로 어느 한 설정만의 효과로 단정하지 않음</li>
+      </ul>
     </li>
     <li><strong>남은 파싱 실패는 프롬프트로 해결</strong>: 7차례 반복 수정
       <ul>
@@ -443,7 +449,8 @@
     <li><strong>LLM이 실패해도 배치는 끝나도록 실패 격리</strong>
       <ul>
         <li>실패하면 규칙 기반 정규화 결과(draft)를 그대로 저장하고 다음 상품으로 진행</li>
-        <li>실패 기록을 캐시에 남겨 <strong>6시간 동안 같은 상품 재호출을 차단</strong>, 프롬프트가 같으면 성공 캐시 재사용</li>
+        <li>실패 기록을 캐시에 남겨 <strong>6시간 동안 같은 상품 재호출을 차단</strong></li>
+        <li>프롬프트가 같으면 성공 캐시를 재사용해 중복 호출 방지</li>
         <li>코드펜스(<code>```json</code>)로 감싼 응답도 JSON 본문만 꺼내 파싱</li>
       </ul>
     </li>
@@ -453,7 +460,7 @@
   <div class="result">
     <ul>
       <li>97건 배치 시간 <span class="big">5분 30초 → 2분 52초~3분 23초</span> (약 38~48% 단축)</li>
-      <li>약 60초짜리 timeout은 이후 6회 실행에서 <strong>0회</strong>, 실패해도 10초 안에 끝나도록 바뀜</li>
+      <li>약 60초 timeout은 이후 6회 실행에서 <strong>0회</strong> (실패해도 10초 내 종료)</li>
       <li>프롬프트 개선 후 같은 97건에서 <span class="big">파싱 실패 0건</span>, 구간별 우대금리가 각각의 금리로 분리되는 것 확인</li>
       <li>은행 328건과 정부 63건, 총 391건을 같은 구조로 정규화해 서비스에 사용</li>
     </ul>
@@ -469,8 +476,8 @@
     <dl>
       <dt>기간</dt><dd>2026.09 ~ 2026.11 (카카오테크캠퍼스 4기 2단계)</dd>
       <dt>역할</dt><dd>6인 팀 중 백엔드 (2명 중 1명). 판정 백엔드 개발, CI/CD와 AWS 배포 구축 단독 담당</dd>
-      <dt>기술</dt><dd>Java 21, Spring Boot, PostgreSQL 17, Flyway, Redis, Docker Compose, Caddy, GitHub Actions, AWS EC2·ECR·SSM·IAM(OIDC)</dd>
-      <dt>저장소</dt><dd><a href="https://github.com/kakaotechcampus-4/ktc4-pusan-4">kakaotechcampus-4/ktc4-pusan-4</a></dd>
+      <dt>기술</dt><dd>Java 21, Spring Boot, PostgreSQL 17, Flyway, Redis, Docker Compose, Caddy, GitHub Actions, AWS (EC2, ECR, SSM, IAM OIDC)</dd>
+      <dt>저장소</dt><dd><a href="https://github.com/kakaotechcampus-4/ktc4-pusan-4" target="_blank" rel="noopener noreferrer">kakaotechcampus-4/ktc4-pusan-4</a></dd>
     </dl>
   </div>
 
@@ -486,7 +493,7 @@
 
         <rect x="30" y="52" width="268" height="62" rx="8" fill="#fff" stroke="#2563eb"/>
         <text x="44" y="74" font-weight="600">PR (develop, release 대상)</text>
-        <text x="44" y="92" font-size="11.5" fill="#374151">backend·ai·web 테스트, 빌드</text>
+        <text x="44" y="92" font-size="11.5" fill="#374151">backend, ai, web 테스트 및 빌드</text>
         <text x="44" y="107" font-size="11.5" fill="#2563eb">+ 운영 Dockerfile로 이미지 빌드</text>
 
         <rect x="30" y="130" width="268" height="140" rx="8" fill="#fff" stroke="#2563eb"/>
@@ -508,14 +515,14 @@
         <text x="561" y="68" text-anchor="middle" font-weight="600">Caddy</text>
         <text x="561" y="83" text-anchor="middle" font-size="11" fill="#6b7280">HTTPS, 화면 파일</text>
 
-        <!-- backend·ai 묶음 (blue·green 전환은 그림 5) -->
+        <!-- backend/ai 묶음 (blue-green 전환은 그림 5) -->
         <rect x="430" y="122" width="262" height="88" rx="8" fill="#eff4ff" stroke="#2563eb" stroke-width="1.6"/>
-        <text x="561" y="140" text-anchor="middle" font-weight="700" fill="#2563eb">backend·ai 묶음</text>
+        <text x="561" y="140" text-anchor="middle" font-weight="700" fill="#2563eb">backend / ai 묶음</text>
         <rect x="446" y="150" width="110" height="24" rx="5" fill="#fff" stroke="#93c5fd"/>
         <text x="501" y="167" text-anchor="middle">backend</text>
         <rect x="566" y="150" width="110" height="24" rx="5" fill="#fff" stroke="#93c5fd"/>
         <text x="621" y="167" text-anchor="middle">ai</text>
-        <text x="561" y="197" text-anchor="middle" font-size="11" fill="#6b7280">blue·green 두 묶음으로 무중단 배포 (2-2)</text>
+        <text x="561" y="197" text-anchor="middle" font-size="11" fill="#6b7280">blue-green 두 묶음으로 무중단 배포 (2-2)</text>
 
         <line x1="561" y1="92" x2="561" y2="120" stroke="#2563eb" marker-end="url(#a3)"/>
 
@@ -533,16 +540,20 @@
 
   <h4>문제 원인</h4>
   <ul>
-    <li>탈퇴 정책은 Hard Delete: 카드 거래·매출 같은 민감정보를 남기지 않기 위해 <code>DELETE FROM app_user</code> 한 문장으로 지우고 나머지는 <code>ON DELETE CASCADE</code>에 맡김</li>
-    <li>PostgreSQL은 지워지는 부모 행마다 자식 테이블을 FK 컬럼으로 찾음. 그런데 <strong>자식 쪽 FK 인덱스는 자동으로 만들어지지 않음</strong></li>
-    <li>삭제 경로를 따라가 보니 4개 FK에 쓸 수 있는 인덱스가 없어 단계마다 자식 테이블 전체를 읽고 있었음
+    <li>탈퇴 정책은 Hard Delete: 카드 거래와 매출 같은 민감정보를 남기지 않기 위해 <code>DELETE FROM app_user</code> 한 문장으로 지우고 나머지는 <code>ON DELETE CASCADE</code>에 맡김</li>
+    <li>PostgreSQL은 부모 행을 지울 때 자식 테이블을 FK 컬럼으로 찾지만, <strong>자식 쪽 FK 인덱스는 자동으로 생성되지 않음</strong></li>
+    <li>삭제 경로의 4개 FK에 쓸 수 있는 인덱스가 없어, 단계마다 자식 테이블 전체를 스캔하고 있었음
       <ul>
         <li><code>question_queue.judgment_id</code>, <code>answered_fact_id</code>: 인덱스 없음</li>
         <li><code>limit_bucket_entry.judgment_id</code>: <code>UNIQUE(user_id, tax_year, bucket_code, judgment_id)</code>의 네 번째 컬럼이라 이 조회에 못 씀</li>
         <li><code>judgment_override.transaction_id</code>: <code>WHERE active</code> 부분 인덱스만 있어 비활성 행까지 찾는 조회에 못 씀</li>
       </ul>
     </li>
-    <li>측정(로컬 PostgreSQL 16, 사용자 100명 × 거래·판정 3,000건, 판정 30만 행): 사용자 1명 삭제에 30초, 그중 <code>limit_bucket_entry</code> FK 18.4초, <code>question_queue</code> FK 9.0초</li>
+    <li>측정 결과: 사용자 1명 삭제에 <strong>30초</strong> 소요 (<code>limit_bucket_entry</code> FK <strong>18.4초</strong>, <code>question_queue</code> FK <strong>9.0초</strong>)
+      <ul>
+        <li>측정 환경: 로컬 PostgreSQL 16, 사용자 100명 × 거래 및 판정 3,000건 (판정 30만 행)</li>
+      </ul>
+    </li>
   </ul>
 
   <figure>
@@ -577,12 +588,12 @@
         <text x="16" y="198" font-size="11.5" fill="#6b7280">화살표: ON DELETE CASCADE 경로 (일부). 빨간 표시: 쓸 수 있는 인덱스가 없던 FK와 인덱스 추가 전 그 FK 처리에 걸린 시간</text>
       </g>
     </svg>
-    <figcaption>그림 4. 계정 1건 삭제가 자식 테이블로 번지는 경로와 병목 FK</figcaption>
+    <figcaption>그림 4. 계정 1건 삭제가 자식 테이블로 번지는 경로와 병목 FK.</figcaption>
   </figure>
 
   <h4>해결 과정</h4>
   <ol class="steps">
-    <li><strong>Flyway 마이그레이션(V9)으로 단일 B-tree 인덱스 4개 추가</strong>: 위 4개 FK 컬럼마다 그 컬럼 하나만으로 된 인덱스 (예: <code>CREATE INDEX … ON limit_bucket_entry (judgment_id)</code>)</li>
+    <li><strong>Flyway 마이그레이션(V9)으로 단일 B-tree 인덱스 4개 추가</strong>: 위 4개 FK 컬럼마다 개별 인덱스 생성 (예: <code>CREATE INDEX … ON limit_bucket_entry (judgment_id)</code>)</li>
     <li><strong>인덱스가 늘리는 쓰기 비용을 같이 측정</strong> (3회 중앙값)
       <div class="table-scroll">
       <table>
@@ -596,7 +607,7 @@
       </div>
       <ul><li>행당 5~13µs, 판정 3,000건 한 번에 약 20ms 증가 → 탈퇴 한 번에 30초보다 낫다고 판단</li></ul>
     </li>
-    <li><strong>모든 FK에 걸지는 않음</strong>: <code>judgment_run.context_id</code>도 인덱스가 없지만 run은 배치당 몇 건뿐이라 전체를 읽어도 싸서 제외</li>
+    <li><strong>모든 FK에 걸지는 않음</strong>: <code>judgment_run.context_id</code>도 인덱스가 없지만 run은 배치당 몇 건뿐이라 전체 스캔 비용이 작아 제외</li>
     <li><strong>배포 호환성 확인</strong>: 인덱스만 추가하므로, 이전 버전으로 롤백해도 기존 코드가 깨지지 않음</li>
   </ol>
 
@@ -688,16 +699,16 @@
   <h4>해결 과정</h4>
   <ol class="steps">
     <li><strong>Caddy와 화면 파일 분리</strong> (PR #252): Caddy 이미지 버전을 고정하고 화면 파일만 볼륨에 반영 → 설정 변경은 재시작 없이 <code>caddy reload</code></li>
-    <li><strong>backend·ai 묶음을 blue·green 두 개로 무중단 배포</strong> (PR #253)
+    <li><strong>backend와 ai 묶음을 blue-green 두 개로 무중단 배포</strong> (PR #253)
       <ol class="steps-strip">
-        <li>쉬는 색의 backend·ai를 새 이미지로 띄우고 healthy까지 대기</li>
+        <li>쉬는 색의 backend와 ai를 새 이미지로 띄우고 healthy까지 대기</li>
         <li>Caddy가 읽는 <code>upstream.caddy</code>를 새 색으로 교체</li>
-        <li><code>caddy reload</code>로 새 요청만 새 색으로</li>
+        <li><code>caddy reload</code>로 새 요청만 새 색으로 전환</li>
         <li>옛 묶음은 처리 중인 요청을 마친 뒤 stop</li>
       </ol>
       <ul>
         <li>backend와 ai는 서로를 호출하므로 <strong>한 묶음으로 전환</strong>해 새 backend와 옛 ai가 섞이지 않게 함</li>
-        <li>헬스체크 기반 자동 전환 대신 reload를 택함: 옛 서버가 하던 요청은 마저 끝내고, 새 요청만 새 설정을 따르기 때문</li>
+        <li>헬스체크 기반 자동 전환 대신 reload를 택함: 옛 묶음이 하던 요청은 마저 끝내고, 새 요청만 새 설정을 따르기 때문</li>
       </ul>
     </li>
     <li><strong>전환이 실패하거나 꼬이지 않도록 보완</strong>
@@ -712,7 +723,7 @@
   <h4>결과</h4>
   <div class="result">
     <ul>
-      <li>배포 중 끊김 <span class="big">화면 18.1초 → 0초, API 20.6초 → 0초</span> (blue·green 전환 4회 모두 0초)</li>
+      <li>배포 중 끊김 <span class="big">화면 18.1초 → 0초, API 20.6초 → 0초</span> (blue-green 전환 4회 모두 0초)</li>
       <li>판정 5,000건 처리 중 배포: API 멈춤 63.1초 → 0초, 5,000건 모두 처리 완료</li>
     </ul>
   </div>
@@ -720,7 +731,7 @@
 
 <footer>
   <span>최유렬</span>
-  <a class="icon-link" href="https://github.com/yuyeol3" aria-label="GitHub" title="GitHub: yuyeol3">
+  <a class="icon-link" href="https://github.com/yuyeol3" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub: yuyeol3">
     <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/></svg>
   </a>
   <a class="icon-link" href="mailto:zerom50@gmail.com" aria-label="이메일" title="zerom50@gmail.com">
@@ -737,8 +748,13 @@
     var links = Array.prototype.slice.call(document.querySelectorAll('.toc a[href^="#"]'));
     var targets = links.map(function (a) { return document.getElementById(a.getAttribute('href').slice(1)); });
     function update() {
+      var atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
       var current = 0;
-      targets.forEach(function (el, i) { if (el && el.getBoundingClientRect().top <= 120) current = i; });
+      if (atBottom) {
+        current = links.length - 1;
+      } else {
+        targets.forEach(function (el, i) { if (el && el.getBoundingClientRect().top <= 120) current = i; });
+      }
       links.forEach(function (a, i) { a.classList.toggle('active', i === current); });
     }
     window.addEventListener('scroll', update, { passive: true });
